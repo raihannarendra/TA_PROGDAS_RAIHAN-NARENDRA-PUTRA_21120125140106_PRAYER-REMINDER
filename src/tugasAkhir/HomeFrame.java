@@ -34,7 +34,7 @@ public class HomeFrame extends javax.swing.JFrame {
         initializeToggleColors();
         updateWaktuSholat(cmbLocation.getSelectedItem().toString());
         
-        startReminder(); // Pindahkan ke sini
+        startReminder();
     }
 
     private void initCustomComponents() {
@@ -51,10 +51,8 @@ public class HomeFrame extends javax.swing.JFrame {
 
         if (isActive) {
             System.out.println("Status reminder " + sholatName + ": AKTIF");
-            // Logika untuk mengatur timer atau scheduler di Java (seperti java.util.Timer)
         } else {
             System.out.println("Status reminder " + sholatName + ": NONAKTIF");
-            // Logika untuk membatalkan timer yang sudah aktif
         }
     }
     private void initializeLocationData() {
@@ -133,9 +131,8 @@ public class HomeFrame extends javax.swing.JFrame {
             LocalTime now = LocalTime.now().withSecond(0).withNano(0);
             LocalTime checkResetTime = LocalTime.of(3, 0).withSecond(0).withNano(0); // 03:00
 
-            // **LOGIKA RESET HARIAN**
+            
             if (now.equals(checkResetTime)) {
-                 // Reset semua flag Adzan pada jam 03:00 pagi
                 subuhAdzanPlayed = false;
                 dzuhurAdzanPlayed = false;
                 asharAdzanPlayed = false;
@@ -143,31 +140,26 @@ public class HomeFrame extends javax.swing.JFrame {
                 isyaAdzanPlayed = false;
             }
 
-            // **CEK SUBUH**
             if (tglSubuh.isSelected() && timeSubuh != null && now.equals(timeSubuh) && !subuhAdzanPlayed) {
                 playAdzan();
                 subuhAdzanPlayed = true; // Setel flag agar tidak berbunyi lagi
             }
 
-            // **CEK DZUHUR**
             if (tglDzuhur.isSelected() && timeDzuhur != null && now.equals(timeDzuhur) && !dzuhurAdzanPlayed) {
                 playAdzan();
                 dzuhurAdzanPlayed = true;
             }
 
-            // **CEK ASHAR**
             if (tglAshar.isSelected() && timeAshar != null && now.equals(timeAshar) && !asharAdzanPlayed) {
                 playAdzan();
                 asharAdzanPlayed = true;
             }
 
-            // **CEK MAGHRIB**
             if (tglMaghrib.isSelected() && timeMaghrib != null && now.equals(timeMaghrib) && !maghribAdzanPlayed) {
                 playAdzan();
                 maghribAdzanPlayed = true;
             }
 
-            // **CEK ISYA**
             if (tglIsya.isSelected() && timeIsya != null && now.equals(timeIsya) && !isyaAdzanPlayed) {
                 playAdzan();
                 isyaAdzanPlayed = true;
@@ -179,9 +171,7 @@ public class HomeFrame extends javax.swing.JFrame {
 
     
     private boolean reminderStarted = false;
-    // Hapus LocalTime timeSubuh, timeDzuhur, timeAshar, timeMaghrib, timeIsya; dari bawah //
-    // private boolean reminderStarted = false;
-    private LocalTime timeSubuh, timeDzuhur, timeAshar, timeMaghrib, timeIsya; // Biarkan ini
+    private LocalTime timeSubuh, timeDzuhur, timeAshar, timeMaghrib, timeIsya;
     private boolean subuhAdzanPlayed = false;
     private boolean dzuhurAdzanPlayed = false;
     private boolean asharAdzanPlayed = false;
@@ -396,7 +386,6 @@ public class HomeFrame extends javax.swing.JFrame {
         boolean isReminderOn = tglDzuhur.isSelected();
 
         if (isReminderOn) {
-            // Status ON
             // 1. Ubah Teks menjadi ON
             tglDzuhur.setText("ON"); 
 
@@ -408,7 +397,6 @@ public class HomeFrame extends javax.swing.JFrame {
             manageReminderState("Dzuhur", true);
 
         } else {
-            // Status OFF
             // 1. Ubah Teks menjadi OFF
             tglDzuhur.setText("OFF"); 
 
@@ -431,7 +419,6 @@ public class HomeFrame extends javax.swing.JFrame {
         boolean isReminderOn = tglSubuh.isSelected();
 
         if (isReminderOn) {
-            // Status ON
             // 1. Ubah Teks menjadi ON
             tglSubuh.setText("ON"); 
 
@@ -443,7 +430,6 @@ public class HomeFrame extends javax.swing.JFrame {
             manageReminderState("Subuh", true);
 
         } else {
-            // Status OFF
             // 1. Ubah Teks menjadi OFF
             tglSubuh.setText("OFF"); 
 
@@ -461,7 +447,6 @@ public class HomeFrame extends javax.swing.JFrame {
         boolean isReminderOn = tglAshar.isSelected();
 
         if (isReminderOn) {
-            // Status ON
             // 1. Ubah Teks menjadi ON
             tglAshar.setText("ON"); 
 
@@ -473,7 +458,6 @@ public class HomeFrame extends javax.swing.JFrame {
             manageReminderState("Ashar", true);
 
         } else {
-            // Status OFF
             // 1. Ubah Teks menjadi OFF
             tglAshar.setText("OFF"); 
 
@@ -491,7 +475,6 @@ public class HomeFrame extends javax.swing.JFrame {
         boolean isReminderOn = tglMaghrib.isSelected();
 
         if (isReminderOn) {
-            // Status ON
             // 1. Ubah Teks menjadi ON
             tglMaghrib.setText("ON"); 
 
@@ -503,7 +486,6 @@ public class HomeFrame extends javax.swing.JFrame {
             manageReminderState("Maghrib", true);
 
         } else {
-            // Status OFF
             // 1. Ubah Teks menjadi OFF
             tglMaghrib.setText("OFF"); 
 
@@ -521,7 +503,6 @@ public class HomeFrame extends javax.swing.JFrame {
         boolean isReminderOn = tglIsya.isSelected();
 
         if (isReminderOn) {
-            // Status ON
             // 1. Ubah Teks menjadi ON
             tglIsya.setText("ON"); 
 
@@ -533,7 +514,6 @@ public class HomeFrame extends javax.swing.JFrame {
             manageReminderState("Isya", true);
 
         } else {
-            // Status OFF
             // 1. Ubah Teks menjadi OFF
             tglIsya.setText("OFF"); 
 
@@ -548,7 +528,6 @@ public class HomeFrame extends javax.swing.JFrame {
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
         // TODO add your handling code here:
-        // Ambil status setiap tombol
         boolean subuhStatus = tglSubuh.isSelected();
         boolean dzuhurStatus = tglDzuhur.isSelected();
         boolean asharStatus = tglAshar.isSelected();
@@ -580,8 +559,6 @@ public class HomeFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_cmbLocationItemStateChanged
     
     private void initializeToggleColors() {
-        // Asumsikan default status Subuh adalah ON (true)
-        // Untuk tglSubuh
         if (tglSubuh.isSelected()) {
             tglSubuh.setBackground(Color.GREEN.darker());
             tglSubuh.setText("ON"); // <-- Tambahkan ini
