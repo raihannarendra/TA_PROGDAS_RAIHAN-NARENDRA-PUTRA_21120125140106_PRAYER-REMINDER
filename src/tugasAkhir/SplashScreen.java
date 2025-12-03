@@ -138,7 +138,7 @@ public class SplashScreen extends javax.swing.JFrame {
         
         new Thread(() -> {
             try{
-                for (int i = 0; i <= 100; i++) {
+                for (int i = 0; i <= 100; i++) {// for modul 2
                     Thread.sleep(100);
                     sp.LoadingValue.setText(i + "%");
 

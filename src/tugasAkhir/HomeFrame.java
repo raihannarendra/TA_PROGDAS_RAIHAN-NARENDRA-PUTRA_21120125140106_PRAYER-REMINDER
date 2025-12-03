@@ -4,7 +4,9 @@
  */
 package tugasAkhir;
 
-import java.awt.Color;
+import java.awt.*;
+import javax.swing.*;
+import java.awt.Font;
 import java.io.File;
 import java.time.LocalTime;
 import java.util.HashMap;
@@ -12,13 +14,16 @@ import java.util.Map;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.swing.BorderFactory;
 import javax.swing.JOptionPane;
+import javax.swing.JToggleButton;
 import javax.swing.Timer;
 
 /**
  *
  * @author user
  */
+
 public class HomeFrame extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(HomeFrame.class.getName());
@@ -35,8 +40,25 @@ public class HomeFrame extends javax.swing.JFrame {
         updateWaktuSholat(cmbLocation.getSelectedItem().toString());
         
         startReminder();
+        
+        styleToggle(tglSubuh);
+        styleToggle(tglDzuhur);
+        styleToggle(tglAshar);
+        styleToggle(tglMaghrib);
+        styleToggle(tglIsya);
+        
+        styleTextField(txtTimeShubuh);
+        styleTextField(txtTimeDzuhur);
+        styleTextField(txtTimeAshar);
+        styleTextField(txtTimeMaghrib);
+        styleTextField(txtTimeIsya);
+
+        styleButton(btnSave);
+        
+        
     }
 
+    
     private void initCustomComponents() {
         mainPanel.setBackground(new java.awt.Color(255, 255, 255, 80));
         
@@ -45,8 +67,47 @@ public class HomeFrame extends javax.swing.JFrame {
         
         btnClose.setBackground(Color.red);
         btnClose.setForeground(Color.white);
+        
+        txtTimeShubuh.setBorder(BorderFactory.createEmptyBorder());
+        txtTimeDzuhur.setBorder(BorderFactory.createEmptyBorder());
+        txtTimeAshar.setBorder(BorderFactory.createEmptyBorder());
+        txtTimeMaghrib.setBorder(BorderFactory.createEmptyBorder());
+        txtTimeIsya.setBorder(BorderFactory.createEmptyBorder());
+
+        // (Opsional) Mengatur latar belakang menjadi transparan atau putih agar menyatu
+        txtTimeShubuh.setOpaque(false); // Jika latar belakang panel berwarna, gunakan ini
+        txtTimeDzuhur.setOpaque(false);
+        txtTimeAshar.setOpaque(false);
+        txtTimeMaghrib.setOpaque(false);
+        txtTimeIsya.setOpaque(false);
     }
     
+    private void styleToggle(JToggleButton btn) {
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btn.setForeground(Color.WHITE);
+        btn.setBackground(new Color(220,53,69)); // warna OFF
+        btn.setText("OFF");
+    }
+
+    private void styleTextField(JTextField txt) {
+        txt.setOpaque(false);
+        txt.setBorder(BorderFactory.createEmptyBorder()); // <-- garis bawah hilang total
+        txt.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        txt.setForeground(new Color(0,51,102));
+        txt.setHorizontalAlignment(JTextField.CENTER);
+    }
+
+
+    private void styleButton(JButton btn) {
+        btn.setBackground(new Color(0,102,153));
+        btn.setForeground(Color.WHITE);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setFocusPainted(false);
+        btn.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+    }
+
     private void manageReminderState(String sholatName, boolean isActive) {
 
         if (isActive) {
@@ -61,6 +122,7 @@ public class HomeFrame extends javax.swing.JFrame {
             new javax.swing.DefaultComboBoxModel<>();
 
         // 2. Tambahkan lokasi ke model
+        model.addElement("Lokasi Custom");
         model.addElement("Jakarta, WIB");
         model.addElement("Bandung, WIB");
         model.addElement("Semarang, WIB");
@@ -73,13 +135,31 @@ public class HomeFrame extends javax.swing.JFrame {
         // 3. Terapkan model ke JComboBox
         cmbLocation.setModel(model);
 
-        // (Opsional) Pilih item pertama sebagai default
+        // Pilih item pertama sebagai default
         cmbLocation.setSelectedIndex(0);
     }
+    private void setWaktuEditable(boolean editable) {
+        txtTimeShubuh.setEditable(editable);
+        txtTimeShubuh.setEditable(editable);
+        txtTimeAshar.setEditable(editable);
+        txtTimeMaghrib.setEditable(editable);
+        txtTimeIsya.setEditable(editable);
+
+        if (editable) {
+            // Kosongkan kolom input saat mode custom
+            txtTimeShubuh.setText("00:00");
+            txtTimeDzuhur.setText("00:00");
+            txtTimeAshar.setText("00:00");
+            txtTimeMaghrib.setText("00:00");
+            txtTimeIsya.setText("00:00");
+            txtTimeShubuh.requestFocus(); // Fokuskan ke input Subuh
+        }
+    }
+
     private Map<String, String[]> jadwalSholat = new HashMap<>();
     private void initializeJadwalSholat() {
         // [Subuh, Dzuhur, Ashar, Maghrib, Isya]
-        jadwalSholat.put("Jakarta, WIB",    new String[]{"04:06", "11:47", "15:11", "17:59", "19:14"});
+        jadwalSholat.put("Jakarta, WIB",    new String[]{"04:06", "11:47", "13:34", "17:59", "19:14"});
         jadwalSholat.put("Bandung, WIB",    new String[]{"04:05", "11:46", "15:10", "17:58", "19:13"});
         jadwalSholat.put("Semarang, WIB",   new String[]{"03:56", "11:36", "14:59", "17:47", "19:03"});
         jadwalSholat.put("Surabaya, WIB",   new String[]{"03:44", "11:23", "14:47", "17:35", "18:52"});
@@ -95,11 +175,11 @@ public class HomeFrame extends javax.swing.JFrame {
             String[] waktu = jadwalSholat.get(lokasi);
 
             // 1. Memperbarui JLabel dengan data baru
-            lblTimeSubuh.setText(waktu[0]);
-            lblTimeDzuhur.setText(waktu[1]);
-            lblTimeAshar.setText(waktu[2]);
-            lblTimeMaghrib.setText(waktu[3]);
-            lblTimeIsya.setText(waktu[4]);
+            txtTimeShubuh.setText(waktu[0]);
+            txtTimeDzuhur.setText(waktu[1]);
+            txtTimeAshar.setText(waktu[2]);
+            txtTimeMaghrib.setText(waktu[3]);
+            txtTimeIsya.setText(waktu[4]);
 
             // 2. Memperbarui variabel instance LocalTime
             timeSubuh = LocalTime.parse(waktu[0]);
@@ -196,24 +276,24 @@ public class HomeFrame extends javax.swing.JFrame {
         cmbLocation = new javax.swing.JComboBox<>();
         pnlSubuh = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        lblTimeSubuh = new javax.swing.JLabel();
         tglSubuh = new javax.swing.JToggleButton();
+        txtTimeShubuh = new javax.swing.JTextField();
         pnlDzuhur = new javax.swing.JPanel();
-        lblTimeDzuhur = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         tglDzuhur = new javax.swing.JToggleButton();
+        txtTimeDzuhur = new javax.swing.JTextField();
         pnlAshar = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
-        lblTimeAshar = new javax.swing.JLabel();
         tglAshar = new javax.swing.JToggleButton();
+        txtTimeAshar = new javax.swing.JTextField();
         pnlMaghrib = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
-        lblTimeMaghrib = new javax.swing.JLabel();
         tglMaghrib = new javax.swing.JToggleButton();
+        txtTimeMaghrib = new javax.swing.JTextField();
         pnlIsya = new javax.swing.JPanel();
         jLabel6 = new javax.swing.JLabel();
-        lblTimeIsya = new javax.swing.JLabel();
         tglIsya = new javax.swing.JToggleButton();
+        txtTimeIsya = new javax.swing.JTextField();
         btnSave = new javax.swing.JButton();
         pnlBackGround = new javax.swing.JLabel();
 
@@ -244,7 +324,7 @@ public class HomeFrame extends javax.swing.JFrame {
         pnlLocation.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         cmbLocation.setForeground(new java.awt.Color(0, 0, 153));
-        cmbLocation.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Jakarta, WIB", "Bandung, WIB", "Semarang, WIB", "Surabaya, WIB", "Medan, WIB", "Denpasar, WITA", "Makassar, WITA", "Jayapura, WIT" }));
+        cmbLocation.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Lokasi Custom", "Jakarta, WIB", "Bandung, WIB", "Semarang, WIB", "Surabaya, WIB", "Medan, WIB", "Denpasar, WITA", "Makassar, WITA", "Jayapura, WIT" }));
         cmbLocation.setToolTipText("");
         cmbLocation.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -263,10 +343,6 @@ public class HomeFrame extends javax.swing.JFrame {
         jLabel1.setText("Subuh");
         pnlSubuh.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 80, 20));
 
-        lblTimeSubuh.setForeground(new java.awt.Color(0, 0, 102));
-        lblTimeSubuh.setText("00.00");
-        pnlSubuh.add(lblTimeSubuh, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 10, 80, 20));
-
         tglSubuh.setName(""); // NOI18N
         tglSubuh.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -275,14 +351,14 @@ public class HomeFrame extends javax.swing.JFrame {
         });
         pnlSubuh.add(tglSubuh, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 5, 60, 30));
 
+        txtTimeShubuh.setText("00:00");
+        txtTimeShubuh.setOpaque(true);
+        pnlSubuh.add(txtTimeShubuh, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 5, 80, 30));
+
         mainPanel.add(pnlSubuh, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 150, 300, 40));
 
         pnlDzuhur.setBackground(new java.awt.Color(255, 255, 255));
         pnlDzuhur.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-
-        lblTimeDzuhur.setForeground(new java.awt.Color(0, 0, 102));
-        lblTimeDzuhur.setText("00.00");
-        pnlDzuhur.add(lblTimeDzuhur, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 10, 80, 20));
 
         jLabel3.setFont(new java.awt.Font("Segoe Print", 1, 12)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(0, 51, 153));
@@ -296,6 +372,14 @@ public class HomeFrame extends javax.swing.JFrame {
         });
         pnlDzuhur.add(tglDzuhur, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 5, 60, 30));
 
+        txtTimeDzuhur.setText("00:00");
+        txtTimeDzuhur.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtTimeDzuhurActionPerformed(evt);
+            }
+        });
+        pnlDzuhur.add(txtTimeDzuhur, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 5, 80, 30));
+
         mainPanel.add(pnlDzuhur, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 195, 300, 40));
 
         pnlAshar.setBackground(new java.awt.Color(255, 255, 255));
@@ -306,16 +390,15 @@ public class HomeFrame extends javax.swing.JFrame {
         jLabel4.setText("Ashar");
         pnlAshar.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 80, 20));
 
-        lblTimeAshar.setForeground(new java.awt.Color(0, 0, 102));
-        lblTimeAshar.setText("00.00");
-        pnlAshar.add(lblTimeAshar, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 10, 80, 20));
-
         tglAshar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 tglAsharActionPerformed(evt);
             }
         });
         pnlAshar.add(tglAshar, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 5, 60, 30));
+
+        txtTimeAshar.setText("00:00");
+        pnlAshar.add(txtTimeAshar, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 5, 80, 30));
 
         mainPanel.add(pnlAshar, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 240, 300, 40));
 
@@ -327,16 +410,15 @@ public class HomeFrame extends javax.swing.JFrame {
         jLabel5.setText("Maghrib");
         pnlMaghrib.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 80, 20));
 
-        lblTimeMaghrib.setForeground(new java.awt.Color(0, 0, 102));
-        lblTimeMaghrib.setText("00.00");
-        pnlMaghrib.add(lblTimeMaghrib, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 10, 80, 20));
-
         tglMaghrib.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 tglMaghribActionPerformed(evt);
             }
         });
         pnlMaghrib.add(tglMaghrib, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 5, 60, 30));
+
+        txtTimeMaghrib.setText("00:00");
+        pnlMaghrib.add(txtTimeMaghrib, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 5, 80, 30));
 
         mainPanel.add(pnlMaghrib, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 285, 300, 40));
 
@@ -348,16 +430,15 @@ public class HomeFrame extends javax.swing.JFrame {
         jLabel6.setText("Isya");
         pnlIsya.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 80, 20));
 
-        lblTimeIsya.setForeground(new java.awt.Color(0, 0, 102));
-        lblTimeIsya.setText("00.00");
-        pnlIsya.add(lblTimeIsya, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 10, 80, 20));
-
         tglIsya.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 tglIsyaActionPerformed(evt);
             }
         });
         pnlIsya.add(tglIsya, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 5, 60, 30));
+
+        txtTimeIsya.setText("00:00");
+        pnlIsya.add(txtTimeIsya, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 5, 80, 30));
 
         mainPanel.add(pnlIsya, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 330, 300, 40));
 
@@ -372,7 +453,6 @@ public class HomeFrame extends javax.swing.JFrame {
         jPanel1.add(mainPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 20, 400, 460));
 
         pnlBackGround.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/background masjid 2.jpg"))); // NOI18N
-        pnlBackGround.setPreferredSize(new java.awt.Dimension(900, 500));
         jPanel1.add(pnlBackGround, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
 
         getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
@@ -525,38 +605,61 @@ public class HomeFrame extends javax.swing.JFrame {
             manageReminderState("Isya", false);
         }
     }//GEN-LAST:event_tglIsyaActionPerformed
-
+// Tambahkan fungsi baru untuk memuat data dari input ke variabel LocalTime
+    private boolean loadCustomTimes() {
+        try {
+            // 🚨 Wajib: Tambahkan .trim() untuk menghilangkan spasi di awal/akhir input
+            timeSubuh = LocalTime.parse(txtTimeShubuh.getText().trim());
+            timeDzuhur = LocalTime.parse(txtTimeDzuhur.getText().trim());
+            timeAshar = LocalTime.parse(txtTimeAshar.getText().trim());
+            timeMaghrib = LocalTime.parse(txtTimeMaghrib.getText().trim());
+            timeIsya = LocalTime.parse(txtTimeIsya.getText().trim());
+            return true;
+        } catch (java.time.format.DateTimeParseException e) {
+            JOptionPane.showMessageDialog(this, 
+                "Format waktu harus HH:mm (contoh: 04:05). Mohon periksa kembali input Anda.", 
+                "Kesalahan Format Waktu", 
+                JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return false;
+        }
+    }
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
         // TODO add your handling code here:
-        boolean subuhStatus = tglSubuh.isSelected();
-        boolean dzuhurStatus = tglDzuhur.isSelected();
-        boolean asharStatus = tglAshar.isSelected();
-        boolean maghribStatus = tglMaghrib.isSelected();
-        boolean isyaStatus = tglIsya.isSelected();
-        
-        timeSubuh = LocalTime.parse("04:25");
-        timeDzuhur = LocalTime.parse("11:40");
-        timeAshar = LocalTime.parse("15:05");
-        timeMaghrib = LocalTime.parse("17:25");
-        timeIsya = LocalTime.parse("18:45");
+        if ("Lokasi Custom".equals(cmbLocation.getSelectedItem().toString())) {
+            if (!loadCustomTimes()) {
+                return; // Hentikan proses jika validasi gagal
+            }
+        }
 
-        // tampilkan status
+        // Tampilkan status dan feedback
         System.out.println("Jadwal berhasil disimpan.");
-
-        // Beri feedback ke pengguna
         JOptionPane.showMessageDialog(this, "Pengaturan Reminder berhasil disimpan!");
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void cmbLocationItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cmbLocationItemStateChanged
         // TODO add your handling code here:
         if (evt.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-            // Mendapatkan lokasi yang dipilih
             String lokasiTerpilih = cmbLocation.getSelectedItem().toString();
 
-            // Memanggil fungsi pembaruan jadwal sholat
-            updateWaktuSholat(lokasiTerpilih);
+            if ("Lokasi Custom".equals(lokasiTerpilih)) {
+                // AKTIFKAN EDIT MODE
+                setWaktuEditable(true);
+                // Matikan tombol Save sementara, beri peringatan untuk klik Save setelah input
+                btnSave.setEnabled(true);
+                System.out.println("Mode Lokasi Custom aktif. Silakan masukkan jam sholat manual.");
+            } else {
+                // NONAKTIFKAN EDIT MODE dan load data dari Map
+                setWaktuEditable(false);
+                updateWaktuSholat(lokasiTerpilih);
+                btnSave.setEnabled(true); // Pastikan tombol Save aktif kembali
+            }
         }
     }//GEN-LAST:event_cmbLocationItemStateChanged
+
+    private void txtTimeDzuhurActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTimeDzuhurActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtTimeDzuhurActionPerformed
     
     private void initializeToggleColors() {
         if (tglSubuh.isSelected()) {
@@ -644,11 +747,6 @@ public class HomeFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JLabel lblTimeAshar;
-    private javax.swing.JLabel lblTimeDzuhur;
-    private javax.swing.JLabel lblTimeIsya;
-    private javax.swing.JLabel lblTimeMaghrib;
-    private javax.swing.JLabel lblTimeSubuh;
     private javax.swing.JLabel lblTitle;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JPanel pnlAshar;
@@ -663,5 +761,10 @@ public class HomeFrame extends javax.swing.JFrame {
     private javax.swing.JToggleButton tglIsya;
     private javax.swing.JToggleButton tglMaghrib;
     private javax.swing.JToggleButton tglSubuh;
+    private javax.swing.JTextField txtTimeAshar;
+    private javax.swing.JTextField txtTimeDzuhur;
+    private javax.swing.JTextField txtTimeIsya;
+    private javax.swing.JTextField txtTimeMaghrib;
+    private javax.swing.JTextField txtTimeShubuh;
     // End of variables declaration//GEN-END:variables
 }
