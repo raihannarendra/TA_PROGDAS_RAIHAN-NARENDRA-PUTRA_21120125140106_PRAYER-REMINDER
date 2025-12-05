@@ -7,6 +7,8 @@ package tugasAkhir;
 import java.awt.*;
 import javax.swing.*;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.time.LocalTime;
 import java.util.HashMap;
@@ -18,6 +20,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JOptionPane;
 import javax.swing.JToggleButton;
 import javax.swing.Timer;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -33,20 +36,24 @@ public class HomeFrame extends javax.swing.JFrame {
      */
     public HomeFrame() {
         initComponents();
+
+        // SETUP WINDOW PROPERTIES SETELAH initComponents()
+        setupWindowProperties();
+
         initCustomComponents();
         initializeJadwalSholat();
         initializeLocationData(); 
         initializeToggleColors();
         updateWaktuSholat(cmbLocation.getSelectedItem().toString());
-        
+
         startReminder();
-        
+
         styleToggle(tglSubuh);
         styleToggle(tglDzuhur);
         styleToggle(tglAshar);
         styleToggle(tglMaghrib);
         styleToggle(tglIsya);
-        
+
         styleTextField(txtTimeShubuh);
         styleTextField(txtTimeDzuhur);
         styleTextField(txtTimeAshar);
@@ -54,32 +61,55 @@ public class HomeFrame extends javax.swing.JFrame {
         styleTextField(txtTimeIsya);
 
         styleButton(btnSave);
-        
-        
-    }
 
+        // Setup responsive layout
+        setupResponsiveLayout();
+    }
+    
     
     private void initCustomComponents() {
-        mainPanel.setBackground(new java.awt.Color(255, 255, 255, 80));
-        
+        // Background semi-transparan
+        mainPanel.setBackground(new Color(255, 255, 255, 180));
+
+        // Border untuk main panel
+        mainPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(0, 102, 153), 2),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+
         btnSave.setBackground(new Color(0, 102, 153));
         btnSave.setForeground(Color.white);
-        
-        btnClose.setBackground(Color.red);
-        btnClose.setForeground(Color.white);
-        
-        txtTimeShubuh.setBorder(BorderFactory.createEmptyBorder());
-        txtTimeDzuhur.setBorder(BorderFactory.createEmptyBorder());
-        txtTimeAshar.setBorder(BorderFactory.createEmptyBorder());
-        txtTimeMaghrib.setBorder(BorderFactory.createEmptyBorder());
-        txtTimeIsya.setBorder(BorderFactory.createEmptyBorder());
 
-        // (Opsional) Mengatur latar belakang menjadi transparan atau putih agar menyatu
-        txtTimeShubuh.setOpaque(false); // Jika latar belakang panel berwarna, gunakan ini
-        txtTimeDzuhur.setOpaque(false);
-        txtTimeAshar.setOpaque(false);
-        txtTimeMaghrib.setOpaque(false);
-        txtTimeIsya.setOpaque(false);
+
+
+        // Text fields dengan border bawah
+        txtTimeShubuh.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0, 102, 153)));
+        txtTimeDzuhur.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0, 102, 153)));
+        txtTimeAshar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0, 102, 153)));
+        txtTimeMaghrib.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0, 102, 153)));
+        txtTimeIsya.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0, 102, 153)));
+
+        // Background untuk text field
+        Color textFieldBg = new Color(255, 255, 255, 220);
+        txtTimeShubuh.setBackground(textFieldBg);
+        txtTimeDzuhur.setBackground(textFieldBg);
+        txtTimeAshar.setBackground(textFieldBg);
+        txtTimeMaghrib.setBackground(textFieldBg);
+        txtTimeIsya.setBackground(textFieldBg);
+
+        txtTimeShubuh.setOpaque(true);
+        txtTimeDzuhur.setOpaque(true);
+        txtTimeAshar.setOpaque(true);
+        txtTimeMaghrib.setOpaque(true);
+        txtTimeIsya.setOpaque(true);
+
+        // Transparent panel untuk sholat
+        pnlSubuh.setOpaque(false);
+        pnlDzuhur.setOpaque(false);
+        pnlAshar.setOpaque(false);
+        pnlMaghrib.setOpaque(false);
+        pnlIsya.setOpaque(false);
+        pnlLocation.setOpaque(false);
     }
     
     private void styleToggle(JToggleButton btn) {
@@ -92,11 +122,12 @@ public class HomeFrame extends javax.swing.JFrame {
     }
 
     private void styleTextField(JTextField txt) {
-        txt.setOpaque(false);
-        txt.setBorder(BorderFactory.createEmptyBorder()); // <-- garis bawah hilang total
-        txt.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        txt.setOpaque(true);
+        txt.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0, 102, 153)));
+        txt.setFont(new Font("Segoe UI", Font.BOLD, 14));
         txt.setForeground(new Color(0,51,102));
         txt.setHorizontalAlignment(JTextField.CENTER);
+        txt.setBackground(new Color(255, 255, 255, 200));
     }
 
 
@@ -193,19 +224,35 @@ public class HomeFrame extends javax.swing.JFrame {
             System.out.println("Data jadwal sholat untuk " + lokasi + " tidak tersedia.");
         }
     }
-    
+    private Clip adzanClip;
+
     private void playAdzan() {
         try {
             File file = new File("src/audio/adzan.wav"); 
             AudioInputStream audioStream = AudioSystem.getAudioInputStream(file);
-            Clip clip = AudioSystem.getClip();
-            clip.open(audioStream);
-            clip.start();
+
+            // --- kalau masih ada suara yang belum berhenti, langsung stop ---
+            if (adzanClip != null && adzanClip.isRunning()) {
+                adzanClip.stop();
+                adzanClip.close();
+            }
+
+            adzanClip = AudioSystem.getClip();
+            adzanClip.open(audioStream);
+            adzanClip.start();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
+    private void stopAdzan() {
+        if (adzanClip != null && adzanClip.isRunning()) {
+            adzanClip.stop();
+            adzanClip.close();
+        }
+    }
+
     private void startReminder() {
         Timer timer = new Timer(1000, e -> {
             LocalTime now = LocalTime.now().withSecond(0).withNano(0);
@@ -258,6 +305,7 @@ public class HomeFrame extends javax.swing.JFrame {
     private boolean maghribAdzanPlayed = false;
     private boolean isyaAdzanPlayed = false;
 
+    
      
     /**
      * This method is called from within the constructor to initialize the form.
@@ -270,7 +318,6 @@ public class HomeFrame extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         mainPanel = new javax.swing.JPanel();
-        btnClose = new javax.swing.JButton();
         lblTitle = new javax.swing.JLabel();
         pnlLocation = new javax.swing.JPanel();
         cmbLocation = new javax.swing.JComboBox<>();
@@ -298,22 +345,11 @@ public class HomeFrame extends javax.swing.JFrame {
         pnlBackGround = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setUndecorated(true);
-        setResizable(false);
-        getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel1.setPreferredSize(new java.awt.Dimension(900, 500));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         mainPanel.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-
-        btnClose.setText("X");
-        btnClose.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCloseActionPerformed(evt);
-            }
-        });
-        mainPanel.add(btnClose, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 10, 40, 40));
 
         lblTitle.setFont(new java.awt.Font("Segoe Print", 1, 20)); // NOI18N
         lblTitle.setForeground(new java.awt.Color(0, 102, 153));
@@ -455,7 +491,7 @@ public class HomeFrame extends javax.swing.JFrame {
         pnlBackGround.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/background masjid 2.jpg"))); // NOI18N
         jPanel1.add(pnlBackGround, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
 
-        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
+        getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
 
         pack();
         setLocationRelativeTo(null);
@@ -486,13 +522,9 @@ public class HomeFrame extends javax.swing.JFrame {
 
             // 3. Panggil logika reminder
             manageReminderState("Dzuhur", false);
+            stopAdzan();
         }
     }//GEN-LAST:event_tglDzuhurActionPerformed
-
-    private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
-        // TODO add your handling code here:
-        System.exit(0);
-    }//GEN-LAST:event_btnCloseActionPerformed
 
     private void tglSubuhActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tglSubuhActionPerformed
         // 1. Cek Status Toggle Button
@@ -519,6 +551,7 @@ public class HomeFrame extends javax.swing.JFrame {
 
             // 3. Panggil logika reminder
             manageReminderState("Subuh", false);
+            stopAdzan();
         }
     }//GEN-LAST:event_tglSubuhActionPerformed
 
@@ -547,6 +580,7 @@ public class HomeFrame extends javax.swing.JFrame {
 
             // 3. Panggil logika reminder
             manageReminderState("Ashar", false);
+            stopAdzan();
         }
     }//GEN-LAST:event_tglAsharActionPerformed
 
@@ -575,6 +609,7 @@ public class HomeFrame extends javax.swing.JFrame {
 
             // 3. Panggil logika reminder
             manageReminderState("Maghrib", false);
+            stopAdzan();
         }
     }//GEN-LAST:event_tglMaghribActionPerformed
 
@@ -603,6 +638,7 @@ public class HomeFrame extends javax.swing.JFrame {
 
             // 3. Panggil logika reminder
             manageReminderState("Isya", false);
+            stopAdzan();
         }
     }//GEN-LAST:event_tglIsyaActionPerformed
 // Tambahkan fungsi baru untuk memuat data dari input ke variabel LocalTime
@@ -712,6 +748,89 @@ public class HomeFrame extends javax.swing.JFrame {
         }
         tglIsya.setForeground(Color.WHITE);
     }
+    private void setupWindowProperties() {
+        // 1. Enable resize dan maximize
+        setResizable(true);
+
+        // 2. Set judul window
+        setTitle("Jadwal Sholat Reminder");
+
+        // 3. Set minimum size
+        setMinimumSize(new Dimension(800, 500));
+
+        // 4. Set maximized state dengan delay
+        SwingUtilities.invokeLater(() -> {
+            setExtendedState(JFrame.MAXIMIZED_BOTH);
+        });
+    }
+
+    private void adjustLayoutOnResize() {
+        // Dapatkan ukuran window
+        int width = getWidth();
+        int height = getHeight();
+
+        // Pastikan ukuran valid
+        if (width <= 0 || height <= 0) return;
+
+        System.out.println("Window resized to: " + width + " x " + height);
+
+        // Atur ukuran jPanel1 sesuai window
+        jPanel1.setSize(width, height);
+
+        // Scale background image
+        if (pnlBackGround.getIcon() != null) {
+            ImageIcon originalIcon = (ImageIcon) pnlBackGround.getIcon();
+            Image img = originalIcon.getImage();
+            Image scaledImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+            pnlBackGround.setIcon(new ImageIcon(scaledImg));
+            pnlBackGround.setBounds(0, 0, width, height);
+        }
+
+        // Hitung posisi tengah untuk mainPanel
+        int panelWidth = 400;
+        int panelHeight = 460;
+        int x = (width - panelWidth) / 2;
+        int y = (height - panelHeight) / 2;
+
+        // Atur posisi mainPanel di jPanel1
+        jPanel1.setLayout(null); // Set null layout untuk manual positioning
+        mainPanel.setBounds(x, y, panelWidth, panelHeight);
+
+        // Refresh tampilan
+        revalidate();
+        repaint();
+    }
+
+    private void setupResponsiveLayout() {
+        // Setup listener untuk resize window
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                adjustLayoutOnResize();
+            }
+        });
+
+        // Setup listener untuk maximize/minimize
+        addWindowStateListener(new java.awt.event.WindowStateListener() {
+            @Override
+            public void windowStateChanged(java.awt.event.WindowEvent e) {
+                // Delay sedikit agar window selesai resize
+                Timer timer = new Timer(100, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent evt) {
+                        adjustLayoutOnResize();
+                    }
+                });
+                timer.setRepeats(false);
+                timer.start();
+            }
+        });
+
+        // Panggil pertama kali dengan delay
+        SwingUtilities.invokeLater(() -> {
+            adjustLayoutOnResize();
+        });
+    }
     /**
      * @param args the command line arguments
      */
@@ -738,7 +857,6 @@ public class HomeFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnClose;
     private javax.swing.JButton btnSave;
     private javax.swing.JComboBox<String> cmbLocation;
     private javax.swing.JLabel jLabel1;
